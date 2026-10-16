@@ -17,15 +17,19 @@ export default function TaskDetails() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    Promise.all([api.getTask(id), api.getProjects()])
-      .then(([taskData, projectData]) => { setTask(taskData); setProjects(projectData) })
+    api.getTask(id)
+      .then(setTask)
       .catch(() => setError('This task could not be found.'))
       .finally(() => setLoading(false))
+
+    api.getProjects()
+      .then(setProjects)
+      .catch(() => { })
   }, [id])
 
   async function updateTask(form) {
     try {
-      const updated = await api.updateTask(id, { ...form, projectId: form.projectId })
+      const updated = await api.updateTask(id, { ...form, projectId: Number(form.projectId) })
       setTask(updated)
       setEditing(false)
     } catch {
@@ -37,7 +41,7 @@ export default function TaskDetails() {
     if (!window.confirm('Delete this task? This action cannot be undone.')) return
     try {
       await api.deleteTask(id)
-      navigate('/task')
+      navigate('/tasks')
     } catch {
       setError('Could not delete this task.')
     }
